@@ -1,0 +1,4 @@
+{
+  "schema": "apps/e-commerce-core/src/**/*.graphql",
+  "documents": "apps/e-commerce-core/src/**/*.graphql"
+}

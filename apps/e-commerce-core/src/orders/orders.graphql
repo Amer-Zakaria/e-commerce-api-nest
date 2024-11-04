@@ -1,0 +1,44 @@
+type Order {
+  id: ID!
+  status: String!
+  products: [OrderedProducts!]!
+}
+
+type OrderDetails {
+  id: ID!
+  status: String!
+  products: [OrderedProductsDetailed!]!
+}
+
+type OrderedProductsDetailed {
+  product: Product!
+  capturedName: String!
+  capturedPrice: Float!
+  orderedQuantity: Int!
+}
+
+type OrderedProducts {
+  product: ID!
+  capturedName: String!
+  capturedPrice: Float!
+  orderedQuantity: Int!
+}
+
+input CreateOrderInput {
+  status: String
+  products: [OrderedProductInput!]!
+}
+
+type Query {
+  orders: [Order!]!
+  order(id: String!): OrderDetails!
+}
+
+type Mutation {
+  createOrder(createOrderInput: CreateOrderInput!): Order!
+}
+
+input OrderedProductInput {
+  id: ID!
+  orderedQuantity: Int!
+}

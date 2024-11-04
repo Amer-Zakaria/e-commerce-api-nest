@@ -1,0 +1,59 @@
+type Vendor {
+  name: String!
+  bio: String
+}
+
+input VendorInput {
+  name: String!
+  bio: String
+}
+
+type Product {
+  id: ID!
+  name: String!
+  quantity: Int!
+  price: Float!
+  category: Categories
+  tags: [String!]!
+  createdAt: String!
+  updatedAt: String!
+  isActive: Boolean!
+  vendor: Vendor
+}
+
+type Query {
+  products: [Product!]!
+  product(id: ID!): Product!
+}
+
+type Mutation {
+  createProduct(createProductInput: CreateProductInput!): Product!
+  updateProduct(id: ID!, updateProductInput: UpdateProductInput!): Product!
+  switchIsActive(id: ID!): Product!
+  deleteProduct(id: ID!): Product!
+}
+
+input CreateProductInput {
+  name: String!
+  quantity: Int!
+  price: Float!
+  category: Categories
+  tags: [String!]!
+  vendor: VendorInput
+}
+
+input UpdateProductInput {
+  name: String!
+  quantity: Int!
+  price: Float!
+  category: Categories
+  tags: [String!]!
+  vendor: VendorInput
+}
+
+# The single source of truth
+enum Categories {
+  KITCHEN
+  TECH
+  CAR
+}
