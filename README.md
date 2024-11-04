@@ -7,7 +7,7 @@
 
 ## Description
 
-Built with the [nest](https://github.com/nestjs/nest) framework besides microservices archticture and graphql.
+Built with the [Nest](https://github.com/nestjs/nest) framework besides microservices archticture and graphql.
 
 services:
 
