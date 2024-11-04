@@ -9,7 +9,7 @@
 
 Built with the [Nest](https://github.com/nestjs/nest) framework besides microservices archticture and graphql.
 
-NestJS | @NestJS/Microservices | Typescript | Mongodb | Mongoose | GraphQL | Zod | JWT | Bcrypt 
+NestJS | @NestJS/Microservices | Typescript | Mongodb | Mongoose | GraphQL | Zod | JWT | Bcrypt | Docker
 
 services:
 
