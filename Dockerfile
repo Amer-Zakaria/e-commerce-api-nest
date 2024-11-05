@@ -16,8 +16,5 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-# Creates a "dist" folder with the production build
-RUN npm run build -- ${APP_NAME}
-
-# Start the server using the production build
-CMD [ "node", "dist/apps/${APP_NAME}/main.js" ]
+# Clear any existing build output and run the build command
+RUN rm -rf dist && npm run build -- ${APP_NAME}

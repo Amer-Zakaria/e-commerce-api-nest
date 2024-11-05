@@ -15,6 +15,7 @@ services:
       - ./package.json:/usr/src/app/package.json    
       - ./tsconfig.json:/usr/src/app/tsconfig.json   
       - ./apps/e-commerce-core:/usr/src/app/apps/e-commerce-core
+      - ./apps/users:/usr/src/app/apps/users
     depends_on:
       - users
     env_file: # .env file that sits beside this file
