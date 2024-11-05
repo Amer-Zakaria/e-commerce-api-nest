@@ -7,7 +7,7 @@ services:
       dockerfile: ./Dockerfile
       args:
         - APP_NAME=e-commerce-core
-    command: npm run start:dev -- e-commerce-core
+    command: npm run start:prod:core
     ports:
       - 3000:3000 # This instructs Docker Compose to map port 3000 on the host to port 3000 on the container
     volumes:        
@@ -27,7 +27,7 @@ services:
       dockerfile: ./Dockerfile
       args:
         - APP_NAME=users
-    command: npm run start:dev -- users
+    command: npm run start:prod:users
     ports:
       - 3001:3001/tcp # This instructs Docker Compose to map port 3000 on the host to port 3000 on the container
     volumes:        
