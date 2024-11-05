@@ -3,6 +3,7 @@ FROM node:18-alpine
 
 # Define variables
 ARG APP_NAME
+ENV APP_NAME=${APP_NAME}
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -18,3 +19,6 @@ COPY . .
 
 # Clear any existing build output and run the build command
 RUN rm -rf dist && npm run build -- ${APP_NAME}
+
+# Start the server using the production build
+CMD ["sh", "-c", "node dist/apps/${APP_NAME}/main.js"]
