@@ -1,4 +1,7 @@
-import { CreateUserDto } from '@app/contracts/users-client/users/create-user.dto';
+import {
+  CreateUserDto,
+  createUserSchema,
+} from '@app/contracts/users-client/users/create-user.dto';
 import { Response } from 'express';
 import { Permissions } from '@app/contracts/common/permissions';
 import { UsersService } from './users.service';
@@ -6,68 +9,78 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
-  HttpException,
   Param,
   Patch,
   Post,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ZodValidationPipe } from '../common/validation.pipe';
 import objectIdSchema from '@app/contracts/common/objectIdSchema';
+import { AuthzGuard } from '../common/authz.guard';
+import { PermissionsGuard } from '../common/permissions.guard';
+import { PermissionsDec } from '../common/permissions.decorator';
+import { AdminGuard } from '../common/admin.guard';
+import { z } from 'zod';
+import { InjectModel } from '@nestjs/mongoose';
+import { IUser, User } from './schemas/user.schema';
+import { Model } from 'mongoose';
+import { CheckUniquenessService } from '../common/check-uniqueness.service';
+import { CheckExistenceService } from '../common/check-existence.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private readonly checkUniqunessService: CheckUniquenessService,
+    private readonly checkExistenceService: CheckExistenceService,
+    @InjectModel(User.name) private readonly userModel: Model<IUser>,
+  ) {}
 
+  @UseGuards(AuthzGuard, PermissionsGuard)
+  @PermissionsDec([Permissions.VIEW_USERS])
   @Get()
-  async findAll(@Headers('x-auth-token') token: string) {
-    try {
-      const result = await this.usersService.findAll(token).toPromise();
-      return result;
-    } catch (err) {
-      throw new HttpException(err.code, err.status || 400, {
-        cause: err.validation || err.message,
-      });
-    }
+  async findAll() {
+    const result = await this.usersService.findAll();
+    return result;
   }
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
-    try {
-      const result = await this.usersService.create(createUserDto).toPromise();
-      const { token, user } = result as any;
-      res.header('x-auth-token', token).status(201).json(user);
-    } catch (err) {
-      throw new HttpException(err.code, err.status || 400, {
-        cause: err.validation || err.message,
-      });
-    }
+  async create(
+    @Body(new ZodValidationPipe(createUserSchema)) createUserDto: CreateUserDto,
+    @Res() res: Response,
+  ) {
+    await this.checkUniqunessService.check(
+      this.userModel,
+      'email',
+      createUserDto.email,
+    );
+
+    const result = await this.usersService.create(createUserDto);
+    const { token, user } = result as any;
+    res.header('x-auth-token', token).status(201).json(user);
   }
 
   @Patch(':id')
+  @UseGuards(AuthzGuard, AdminGuard)
   async updateUserPermissions(
-    @Body()
+    @Body(new ZodValidationPipe(z.array(z.nativeEnum(Permissions)).min(1)))
     permissions: Permissions[],
     @Param('id', new ZodValidationPipe(objectIdSchema)) userId: string,
-    @Headers('x-auth-token') token: string,
     @Res() res: Response,
   ) {
-    try {
-      const result = await this.usersService
-        .updateUserPermissions({
-          userId: userId,
-          permissions,
-          token: token,
-        })
-        .toPromise();
+    const user = await this.checkExistenceService.check<IUser>(
+      this.userModel,
+      userId,
+    );
 
-      const { token: generatedToken, user } = result as any;
-      res.header('x-auth-token', generatedToken).status(201).json(user);
-    } catch (err) {
-      throw new HttpException(err.code, err.status || 400, {
-        cause: err.validation || err.message,
-      });
-    }
+    const result = await this.usersService.updateUserPermissions(
+      user,
+      permissions,
+    );
+
+    const { token, user: createdUser } = result as any;
+
+    res.header('x-auth-token', token).status(201).json(createdUser);
   }
 }

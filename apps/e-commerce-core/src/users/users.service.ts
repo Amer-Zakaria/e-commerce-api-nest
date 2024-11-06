@@ -1,51 +1,60 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { IUser, User } from 'apps/users/src/users/schemas/user.schema';
+import { Error, Model } from 'mongoose';
 import { CreateUserDto } from '@app/contracts/users-client/users/create-user.dto';
-import { USERS_PATTERNS } from '@app/contracts/users-client/users/users.pattern';
-import { USERS_CLIENT } from './constant';
+import * as bcrypt from 'bcrypt';
+import { ERROR_TYPE } from '@app/contracts/error/error-types';
 import { Permissions } from '@app/contracts/common/permissions';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@Inject(USERS_CLIENT) private usersClient: ClientProxy) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<IUser>,
+    private readonly authService: AuthService,
+  ) {}
 
-  findAll(token?: string) {
-    const metadata = { headers: { 'x-auth-token': token } };
-
-    return this.usersClient.send(USERS_PATTERNS.FIND_ALL, {
-      payload: { whatsoever: 'yo' },
-      metadata,
-    });
+  findAll(): Promise<User[]> {
+    return this.userModel.find();
   }
 
-  create(createUserDto: CreateUserDto) {
-    return this.usersClient.send(USERS_PATTERNS.CREATE, {
-      payload: createUserDto,
-      metadata: {},
-    });
+  async create(createUserDto: CreateUserDto): Promise<Partial<User>> {
+    //hashing the password
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
+    createUserDto.password = hashedPassword;
+
+    const createdUser = await this.userModel
+      .create(createUserDto)
+      .catch((err: Error.ValidationError) => {
+        throw new BadRequestException(ERROR_TYPE.MONGOOSE, {
+          cause: err,
+        });
+      });
+    const { password, ...createdUserWithoutPass } = (createdUser as any)._doc;
+
+    return createdUserWithoutPass;
   }
 
-  updateUserPermissions({
-    permissions,
-    userId,
-    token,
-  }: {
-    permissions: Permissions[];
-    userId: string;
-    token: string;
-  }) {
-    const metadata = {
-      params: {
-        userId,
-      },
-      headers: {
-        'x-auth-token': token,
-      },
-    };
-
-    return this.usersClient.send(USERS_PATTERNS.UPDATE_USER_PERMISSIONS, {
-      metadata,
-      payload: permissions,
+  async updateUserPermissions(user: IUser, permissions: Permissions[]) {
+    user.set({
+      permissions,
     });
+
+    const createdUser = await user
+      .save()
+      .catch((error: Error.ValidationError) => {
+        throw new BadRequestException(ERROR_TYPE.MONGOOSE, {
+          cause: error,
+        });
+      });
+
+    const { password, ...createdUserWithoutPass } = (createdUser as any)._doc;
+
+    const token = this.authService.generateAuthToken(createdUserWithoutPass);
+
+    return { token, user: createdUserWithoutPass };
   }
 }

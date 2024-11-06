@@ -7,11 +7,3 @@ services:
     envVars:
       - key: APP_NAME
         value: e-commerce-core
-  - type: worker
-    runtime: docker
-    name: users
-    repo: https://github.com/Amer-Zakaria/e-commerce-api-nest.git
-    plan: free
-    envVars:
-      - key: APP_NAME
-        value: users

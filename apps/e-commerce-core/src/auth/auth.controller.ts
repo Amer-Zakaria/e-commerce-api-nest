@@ -1,7 +1,11 @@
-import { Controller, Post, Body, Res, HttpException } from '@nestjs/common';
+import { Controller, Post, Body, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserAuthDto } from '@app/contracts/users-client/auth/user.auth.dto';
+import {
+  UserAuthDto,
+  userCredSchema,
+} from '@app/contracts/users-client/auth/user.auth.dto';
 import { Response } from 'express';
+import { ZodValidationPipe } from '../common/validation.pipe';
 
 @Controller('auth')
 export class AuthController {
@@ -9,16 +13,10 @@ export class AuthController {
 
   @Post()
   async create(
-    @Body() userAuthDto: UserAuthDto,
+    @Body(new ZodValidationPipe(userCredSchema)) userAuthDto: UserAuthDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    try {
-      const token = await this.authService.create(userAuthDto).toPromise();
-      res.header('x-auth-token', token);
-    } catch (err) {
-      throw new HttpException(err.code, err.status || 400, {
-        cause: err.validation || err.message,
-      });
-    }
+    const token = await this.authService.auth(userAuthDto);
+    res.header('x-auth-token', token);
   }
 }

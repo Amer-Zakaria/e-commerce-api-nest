@@ -1,24 +1,23 @@
 import { Module } from '@nestjs/common';
-import { ClientProxyFactory } from '@nestjs/microservices';
-
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { ClientConfigModule } from '../client-config/client-config.module';
-import { ClientConfigService } from '../client-config/client-config.service';
-import { USERS_CLIENT } from './constant';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from './schemas/user.schema';
+import { AuthService } from '../auth/auth.service';
+import { CheckUniquenessService } from '../common/check-uniqueness.service';
+import { CheckExistenceService } from '../common/check-existence.service';
 
 @Module({
-  imports: [ClientConfigModule],
+  imports: [
+    ClientConfigModule,
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  ],
   providers: [
     UsersService,
-    {
-      provide: USERS_CLIENT,
-      useFactory: (ConfigService: ClientConfigService) => {
-        const clientOptions = ConfigService.UsersClientOptions;
-        return ClientProxyFactory.create(clientOptions);
-      },
-      inject: [ClientConfigService],
-    },
+    AuthService,
+    CheckUniquenessService,
+    CheckExistenceService,
   ],
   controllers: [UsersController],
 })
