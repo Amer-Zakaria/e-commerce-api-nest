@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import AppDevConfig from './config/config.dev';
 import AppProdConfig from './config/config.prod';
 import { UsersModule } from './users/users.module';
-import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import GlobalDevConfig from '@app/contracts/config/config.dev';
 import GlobalProdConfig from '@app/contracts/config/config.prod';
@@ -26,7 +25,6 @@ import GlobalProdConfig from '@app/contracts/config/config.prod';
       isGlobal: true,
     }),
     UsersModule,
-    HealthModule,
     AuthModule,
   ],
 })

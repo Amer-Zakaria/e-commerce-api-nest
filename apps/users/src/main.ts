@@ -21,9 +21,6 @@ async function bootstrap() {
 
   await app.startAllMicroservices();
 
-  const httpPort = +configService.get<number>('clientOptions.httpPort', 4001);
-  await app.listen(httpPort);
-
   console.log(configService.get<string>('name'));
 }
 
