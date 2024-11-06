@@ -7,7 +7,7 @@ services:
     envVars:
       - key: APP_NAME
         value: e-commerce-core
-  - type: web
+  - type: private_service
     runtime: docker
     name: users
     repo: https://github.com/Amer-Zakaria/e-commerce-api-nest.git
