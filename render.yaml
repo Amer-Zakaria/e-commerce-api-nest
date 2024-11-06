@@ -15,6 +15,3 @@ services:
     envVars:
       - key: APP_NAME
         value: users
-networks:
-  my-network:
-    driver: bridge
