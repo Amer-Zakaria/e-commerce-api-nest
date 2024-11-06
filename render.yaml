@@ -1,0 +1,17 @@
+services:
+ - type: web
+    runtime: docker
+    name: e-commerce-core
+    repo: https://github.com/Amer-Zakaria/e-commerce-api-nest.git
+    plan: free
+    envVars:
+      - key: APP_NAME
+        value: e-commerce-core
+ - type: web
+    runtime: docker
+    name: users
+    repo: https://github.com/Amer-Zakaria/e-commerce-api-nest.git
+    plan: free
+    envVars:
+      - key: APP_NAME
+        value: users
