@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Transport } from '@nestjs/microservices';
 import {
   HealthCheck,
@@ -13,6 +14,7 @@ export class HealthController {
     private readonly health: HealthCheckService,
     private readonly db: MongooseHealthIndicator,
     private readonly microCheck: MicroserviceHealthIndicator,
+    private readonly configService: ConfigService,
   ) {}
 
   @HealthCheck()
@@ -25,7 +27,10 @@ export class HealthController {
   isUsersHealthy() {
     return this.microCheck.pingCheck('usersService', {
       transport: Transport.TCP,
-      options: { host: 'localhost', port: 3001 },
+      options: {
+        host: this.configService.get<string>('clientOptions.host', 'localhost'),
+        port: +this.configService.get<number>('clientOptions.port', 3001),
+      },
     });
   }
 }

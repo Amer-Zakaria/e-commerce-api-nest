@@ -7,7 +7,10 @@ services:
       dockerfile: ./Dockerfile
       args:
         - APP_NAME=e-commerce-core
-    command: npm run start:dev -- e-commerce-core
+    environment:
+      - NODE_ENV=production
+      - APP_NAME=e-commerce-core
+    # command: npm run start:prod:core
     ports:
       - 3000:3000 # This instructs Docker Compose to map port 3000 on the host to port 3000 on the container
     volumes:        
@@ -15,6 +18,7 @@ services:
       - ./package.json:/usr/src/app/package.json    
       - ./tsconfig.json:/usr/src/app/tsconfig.json   
       - ./apps/e-commerce-core:/usr/src/app/apps/e-commerce-core
+      - ./apps/users:/usr/src/app/apps/users
     depends_on:
       - users
     env_file: # .env file that sits beside this file
@@ -27,7 +31,10 @@ services:
       dockerfile: ./Dockerfile
       args:
         - APP_NAME=users
-    command: npm run start:dev -- users
+    environment:
+      - NODE_ENV=production
+      - APP_NAME=users
+    # command: npm run start:prod:users
     ports:
       - 3001:3001/tcp # This instructs Docker Compose to map port 3000 on the host to port 3000 on the container
     volumes:        
