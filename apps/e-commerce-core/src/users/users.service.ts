@@ -20,7 +20,7 @@ export class UsersService {
     return this.userModel.find();
   }
 
-  async create(createUserDto: CreateUserDto): Promise<Partial<User>> {
+  async create(createUserDto: CreateUserDto) {
     //hashing the password
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
@@ -35,7 +35,9 @@ export class UsersService {
       });
     const { password, ...createdUserWithoutPass } = (createdUser as any)._doc;
 
-    return createdUserWithoutPass;
+    const token = this.authService.generateAuthToken(createdUserWithoutPass);
+
+    return { token, user: createdUserWithoutPass };
   }
 
   async updateUserPermissions(user: IUser, permissions: Permissions[]) {
